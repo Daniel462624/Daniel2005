@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tienda de Suplementos Deportivos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Roboto', sans-serif; background: #f4f4f4; color: #333; }
+
+    header {
+      background: #1a1a1a; color: #fff; padding: 1rem 2rem;
+      display: flex; justify-content: space-between; align-items: center;
+      position: relative;
+    }
+
+    header h1 { font-size: 1.5rem; }
+
+    nav a {
+      color: #fff; margin-left: 1rem;
+      text-decoration: none; font-weight: 500;
+    }
+
+    .cart-icon {
+      position: relative; cursor: pointer;
+    }
+
+    .cart-icon::after {
+      content: attr(data-count);
+      position: absolute; top: -8px; right: -10px;
+      background: red; color: white;
+      border-radius: 50%; padding: 2px 6px;
+      font-size: 0.75rem;
+    }
+
+    .hero {
+      background: #000;
+      height: 400px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-content {
+      position: relative;
+      text-align: center;
+      width: 100%;
+    }
+
+    .hero-content h2 {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      font-size: 1.8rem;
+      z-index: 1;
+    }
+
+    .hero-image {
+      width: 100%;
+      max-width: 1000px;
+      height: auto;
+      border-radius: 15px;
+      object-fit: cover;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+      transition: transform 0.3s ease;
+    }
+
+    .hero-image:hover {
+      transform: scale(1.02);
+    }
+
+    .products {
+      max-width: 1200px; margin: 2rem auto;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem; padding: 0 1rem;
+    }
+
+    .product-card {
+      background: #fff; border-radius: 8px;
+      overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex; flex-direction: column;
+    }
+
+    .product-card img {
+      width: 100%; height: 200px; object-fit: cover;
+    }
+
+    .product-info {
+      padding: 1rem; flex-grow: 1;
+      display: flex; flex-direction: column;
+    }
+
+    .product-info h3 { margin-bottom: 0.5rem; font-size: 1.2rem; }
+    .product-info p { margin-bottom: 1rem; font-size: 1rem; }
+    .product-info .price { font-weight: 700; font-size: 1.1rem; margin-bottom: auto; }
+
+    .product-info button {
+      background: #e63946; color: #fff; border: none;
+      padding: 0.75rem; border-radius: 5px; cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .product-info button:hover {
+      background: #d62839;
+    }
+
+    footer {
+      background: #1a1a1a; color: #fff; text-align: center;
+      padding: 1rem; margin-top: 2rem;
+    }
+
+    #cart-modal {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5); display: none;
+      justify-content: center; align-items: center;
+    }
+
+    #cart-content {
+      background: #fff; padding: 2rem; border-radius: 8px;
+      width: 90%; max-width: 500px;
+    }
+
+    #cart-content h3 { margin-bottom: 1rem; }
+    #cart-content ul { list-style: none; margin-bottom: 1rem; }
+    #cart-content ul li { margin-bottom: 0.5rem; }
+
+    #cart-content button.close-btn {
+      background: #e63946; color: #fff; border: none;
+      padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Suplementos Fitness</h1>
+    <nav>
+      <a href="#">Inicio</a>
+      <a href="#productos">Productos</a>
+      <a href="#contacto">Contacto</a>
+      <span class="cart-icon" onclick="openCart()" data-count="0">🛒</span>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h2>Potencia tu rendimiento con los mejores suplementos</h2>
+      <img src="https://i.ytimg.com/vi/7ePjE7ZXFZ8/sddefault.jpg" alt="Fisicoculturista" class="hero-image">
+    </div>
+  </section>
+
+  <section id="productos" class="products"></section>
+
+  <div id="cart-modal">
+    <div id="cart-content">
+      <h3>Carrito de Compras</h3>
+      <ul id="cart-list"></ul>
+      <strong>Total: S/ <span id="cart-total">0</span></strong><br><br>
+      <button class="close-btn" onclick="closeCart()">Cerrar</button>
+    </div>
+  </div>
+
+  <footer id="contacto">
+    <p>Contacto: ventas@suplementosfitness.pe | Tel: (01) 123-4567</p>
+    <p>&copy; 2025 Suplementos Fitness. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    const productos = [
+      { nombre: 'Creatina Monohidratada', descripcion: '300g de creatina pura para mejorar fuerza y recuperación.', precio: 70, imagen: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/unn/unn03964/g/24.jpg' },
+      { nombre: 'Proteína Whey 1kg', descripcion: 'Proteína de suero de leche de rápida absorción.', precio: 120, imagen: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/cgn/cgn01064/g/114.jpg' },
+      { nombre: 'BCAA 2:1:1', descripcion: '500g de aminoácidos esenciales para recuperación muscular.', precio: 90, imagen: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/cgn/cgn01127/g/115.jpg' },
+      { nombre: 'Pre-Entreno Energético', descripcion: 'Potencia tus entrenamientos con energía y enfoque.', precio: 85, imagen: 'https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/unn/unn03054/g/73.jpg' },
+    ];
+
+    const productosContenedor = document.querySelector("#productos");
+    const carrito = [];
+    const iconoCarrito = document.querySelector(".cart-icon");
+
+    productos.forEach((p, i) => {
+      const card = document.createElement("div");
+      card.className = "product-card";
+      card.innerHTML = `
+        <img src="${p.imagen}" alt="${p.nombre}">
+        <div class="product-info">
+          <h3>${p.nombre}</h3>
+          <p>${p.descripcion}</p>
+          <span class="price">S/ ${p.precio}</span>
+          <button onclick="agregarAlCarrito(${i})">Comprar</button>
+        </div>
+      `;
+      productosContenedor.appendChild(card);
+    });
+
+    function agregarAlCarrito(indice) {
+      carrito.push(productos[indice]);
+      iconoCarrito.setAttribute("data-count", carrito.length);
+    }
+
+    function openCart() {
+      document.querySelector("#cart-modal").style.display = "flex";
+      const lista = document.querySelector("#cart-list");
+      const total = document.querySelector("#cart-total");
+      lista.innerHTML = "";
+      let totalCompra = 0;
+      carrito.forEach(p => {
+        const item = document.createElement("li");
+        item.textContent = `${p.nombre} - S/ ${p.precio}`;
+        lista.appendChild(item);
+        totalCompra += p.precio;
+      });
+      total.textContent = totalCompra;
+    }
+
+    function closeCart() {
+      document.querySelector("#cart-modal").style.display = "none";
+    }
+  </script>
+</body>
+</html>
